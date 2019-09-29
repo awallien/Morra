@@ -1,0 +1,44 @@
+// each processor is getting a copy of this executable program (SPMD)
+// see Figure 1
+morra_process( rounds ):
+
+	MPI_init( )
+	let n be the total number of processors/players
+	let p be an individual processor/player
+	
+	if n < 2:
+		abort
+		
+	let w be a value where 1 means a winner of a round; otherwise 0
+	let tw be the total number of wins
+	for i=1 to rounds:
+		let f be the number of fingers extended by player
+		let g be the guess that a player makes for number of fingers in field
+		w = 0
+		
+		// see Figure 2
+		MPI_reduce: get the sum of the number of fingers in the field
+		
+		// for each processor
+		if sum of fingers == guess:
+			w = 1
+			
+		MPI_reduce: get the sum of all w's from each player
+		
+		if sum of winners == 0:
+			output that nobody won this run
+		elif sum of winners == 1 AND w == 1:
+			output this players's rank to be winner of this run
+			tw++
+		elif sum of winners > 1 AND w == 1:
+			output this player's rank almost won this run
+		
+	// see Figure 3
+	MPI_Allgather: tally[] up the results of the number of wins and
+			distribute them back to each player
+			
+	let p be the number of time where w of player < w from tally
+	for j=1 to n:
+		if w > tally[j]: p++
+		
+	output the player's placement against the other processors	
